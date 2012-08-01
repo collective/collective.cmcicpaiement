@@ -10,6 +10,7 @@ from plone.registry.interfaces import IRegistry
 #others
 from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import settings
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 
 class IAllerDataSchema(interface.Interface):
@@ -75,6 +76,7 @@ class IFractionnedAllerDataSchema(IAllerDataSchema):
 
 class AllerForm(BrowserView):
     interface.implements(IAllerDataSchema)
+    aller_form_template = ViewPageTemplateFile('aller_form.pt')
 
     def __init__(self, context, request):
         self.version = "3"
@@ -82,7 +84,6 @@ class AllerForm(BrowserView):
         self.request = request
         self.portal_state = None
         self.settings = None
-        self.TPE = None
         self._MAC = sceau.MAC()
         self.url_retour = None
         self.url_retour_ok = None
@@ -116,8 +117,6 @@ class AllerForm(BrowserView):
         if self.lgue is None:
             self.lgue = self.context.Language()
 
-        if self.TPE is None:
-            self.TPE = self.settings.TPE
         if self.contact_source is None:
             self.contact_source = self.settings.contact_source
 
@@ -127,6 +126,9 @@ class AllerForm(BrowserView):
             elif self.contact_source == "creator":
                 creator = self.Creators()[0]
                 self.contact = self.membership_tool.getMemberById(creator)
+
+    def action_url(self):
+        return self.settings.url_paiement
 
     def date(self):
         return self.context.Modified.strftime('%d/%m/%Y:%H:%M:%S')
@@ -148,3 +150,9 @@ class AllerForm(BrowserView):
 
     def options(self):
         return ""
+
+    def aller_form(self):
+        return self.aller_form_template()
+
+    def TPE(self):
+        return self.settings.TPE

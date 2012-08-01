@@ -10,6 +10,29 @@ your contents
 
 Status: under development
 
+Components
+==========
+
+Aller form
+----------
+
+This addon add a base Browser to build an "Aller" form. The idea
+is to adapt and implement the current context and request to be an order.
+
+An order must provide following elements:
+
+* montant: the amount of the order
+* reference: the id of the order
+
+You can achieve this in many way: Having a cart done with simplecartjs
+with an Order content type that will provide thoses information. 
+You will then just have to create the view inheriting from 
+collective.cmcicpaiement.aller.AllerForm , implements montant and reference
+method and call aller_form in your template to render the paid button that
+will do the job.
+
+
+
 Credits
 =======
 
