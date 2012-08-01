@@ -7,8 +7,6 @@
     xmlns:plone="http://namespaces.plone.org/plone"
     i18n_domain="collective.cmcicpaiement">
 
-  <include package=".browser" />
-
   <i18n:registerTranslations directory="locales" />
 
   <genericsetup:registerProfile
@@ -20,4 +18,20 @@
       />
   <include file="upgrades.zcml" />
 
+  <interface
+      interface=".interfaces.ILayer"
+      name="collective.cmcicpaiement"
+      />
+
+  <!-- 
+  <browser:page
+      for="*"
+      name="myview"
+      menu="plone_displayviews"
+      title="Galleria"
+      class=".myfile.MyView"
+      layer=".interfaces.ILayer"
+      permission="zope2.View"
+      />
+  -->
 </configure>
