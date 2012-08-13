@@ -19,7 +19,7 @@
   <include file="upgrades.zcml" />
 
   <interface
-      interface=".interfaces.ILayer"
+      interface=".layer.ILayer"
       name="collective.cmcicpaiement"
       />
 
