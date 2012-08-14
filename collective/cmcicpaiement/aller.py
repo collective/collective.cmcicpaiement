@@ -82,7 +82,7 @@ class AllerForm(BrowserView):
     aller_form_template = ViewPageTemplateFile('aller_form.pt')
 
     def __init__(self, context, request):
-        self.version = "3"
+        self.version = "3.0"
         self.context = context
         self.request = request
         self.portal_state = None
@@ -92,11 +92,12 @@ class AllerForm(BrowserView):
         self.url_retour = None
         self.url_retour_ok = None
         self.url_retour_err = None
-        self.lgue = None
+        self.lgue = "FR"
         self.contact_source = None
         self.contact = None
         self._montant = None
         self._reference = None
+        self.societe = None
 
     def __call__(self):
         self.update()
@@ -124,11 +125,11 @@ class AllerForm(BrowserView):
         if self.url_retour_err is None:
             self.url_retour_err = context_url + '/@@cmcic_retour_err'
 
-        if self.lgue is None:
-            self.lgue = self.context.Language()
-
         if self.contact_source is None:
             self.contact_source = self.settings.contact_source
+        
+        if self.societe is None:
+            self.societe = self.settings.societe
 
         if self.contact is None:
             if self.contact_source == "member":
@@ -143,7 +144,7 @@ class AllerForm(BrowserView):
             return bank_url["paiement"]
 
     def date(self):
-        return self.context.Modified.strftime('%d/%m/%Y:%H:%M:%S')
+        return self.context.modified().strftime('%d/%m/%Y:%H:%M:%S')
 
     def montant(self):
         if self._montant is not None:
@@ -155,8 +156,8 @@ class AllerForm(BrowserView):
             return self._reference
         raise NotImplementedError("must be implemented in subclass")
 
-    def text_libre(self):
-        return u""
+    def texte_libre(self):
+        return u"texte_libre"
 
     def mail(self):
         #Note: we may use the creator of hte context ...

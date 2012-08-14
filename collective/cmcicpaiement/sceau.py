@@ -56,7 +56,7 @@ class MAC(object):
 
     def set_key(self, value):
         self._key = value
-        self._wrapped = hmac.new(self._key)
+        self._wrapped = hmac.new(str(self._key))
 
     def digest(self):
         return self._wrapped.digest()

@@ -32,7 +32,7 @@ class FakeContext(object):
         self.aq_inner.aq_explicit = self
         self._modified = "modified date"
         self.remoteUrl = '' #fake Link
-        self.Modified = DateTime()
+        self._modified = DateTime()
 
     def Language(self):
         return "fr"
@@ -71,10 +71,6 @@ class FakeContext(object):
 
     def getRemoteUrl(self): #fake Link
         return self.remoteUrl
-
-    def modified(self): #for ram cache key
-        return "a modification date"
-
 
 class FakeMember(object):
     def __init__(self):

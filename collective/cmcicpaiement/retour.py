@@ -3,17 +3,21 @@ from zope import interface
 
 from collective.cmcicpaiement import i18n
 from Products.Five.browser import BrowserView
+from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 
 #module var
 _ = i18n.message_factory
-cvx_vocabulary = ['oui', 'none']
+cvx_vocabulary = SimpleVocabulary([
+    SimpleTerm('oui', 'oui', _(u'Le cryptogramme visuel a ete saisie')),
+    SimpleTerm('non', 'non', _(u'Pas de cryptogramme'))
+])
 
 
 class IRetourDataSchema(interface.Interface):
     """Retour definition"""
 
     MAC = schema.ASCIILine(title=_(u"MAC"),
-                           description=i18n.retour_MAC_description)
+                           description=i18n.retour_MAC_desc)
 
     date = schema.Date(title=_(u"Date"))
 
@@ -28,7 +32,7 @@ class IRetourDataSchema(interface.Interface):
 
     code_retour = schema.ASCIILine(title=_(u"Code retour"))
 
-    cvx = schema.ASCIILine(title=_(u"CVX"),
+    cvx = schema.Choice(title=_(u"CVX"),
                            vocabulary=cvx_vocabulary)
 
     vld = schema.ASCIILine(title=_(u"VLD"))

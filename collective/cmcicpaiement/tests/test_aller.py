@@ -19,7 +19,7 @@ class UnitTestAllerForm(base.UnitTestCase):
         self.form.update()
 
     def test_version(self):
-        self.assertEqual(self.form.version, "3")
+        self.assertEqual(self.form.version, "3.0")
 
     def test_action_url(self):
         url = self.form.action_url()

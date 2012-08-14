@@ -1,4 +1,4 @@
-￼<form method="post" name="CMCICFormulaire" target="_top" action="view/action_url">
+￼<form method="post" name="CMCICFormulaire" target="_top" tal:attributes="action view/action_url">
 <input type="hidden" name="TPE" value="1234567" tal:attributes="value view/TPE">
 <input type="hidden" name="version" value="3.0" tal:attributes="value view/version">
 <input type="hidden" name="date" value="05/12/2006:11:55:23" tal:attributes="value view/date">
@@ -8,7 +8,7 @@
 <input type="hidden" name="url_retour" value="http://url.retour.com/ko.cgi?order_ref=votreRF12345" tal:attributes="value view/url_retour">
 <input type="hidden" name="url_retour_ok" value="http://url.retour.com/ok.cgi?order_ref=votreRF12345" tal:attributes="value view/url_retour_ok">
 <input type="hidden" name="url_retour_err" value="http://url.retour.com/err.cgi?order_ref=votreRF12345" tal:attributes="value view/url_retour_err">
-<input type="hidden" name="lgue" value="FR"  tal:attributes="value view/lgue">
+<input type="hidden" name="lgue" value="FR" tal:attributes="value view/lgue">
 <input type="hidden" name="societe" value="monSite1" tal:attributes="value view/societe">
 <input type="hidden" name="texte-libre" value="ExempleTexteLibre" tal:attributes="value view/texte_libre">
 <input type="hidden" name="mail" value="internaute@sonemail.fr"  tal:attributes="value view/mail">
