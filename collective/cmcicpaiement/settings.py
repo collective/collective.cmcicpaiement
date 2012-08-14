@@ -83,5 +83,6 @@ class Settings(interface.Interface):
                       default="https://paiement.creditmutuel.fr/test/")
 
     contact_source = schema.Choice(title=_(u"Contact source"),
-                                      vocabulary=contact_source_vocab)
+                                      vocabulary=contact_source_vocab,
+                                      default='member')
 

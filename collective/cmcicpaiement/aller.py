@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #zope
 from zope import component
 from zope import schema
@@ -11,6 +12,7 @@ from plone.registry.interfaces import IRegistry
 from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import settings
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from Products.CMFCore.utils import getToolByName
 
 
 class IAllerDataSchema(interface.Interface):
@@ -20,7 +22,7 @@ class IAllerDataSchema(interface.Interface):
                                default="3.0")
 
     TPE = schema.ASCIILine(title=u"TPE",
-                           description=u"Numero de TPE Virtuel du commerçant. Length : 7 caracters")
+                           description=u"Numero de TPE Virtuel du commercant. Length : 7 caracters")
 
     montant = schema.ASCIILine(title=u"Montant",
                                description=u"Montant TTC de la commande formatee")
@@ -54,8 +56,7 @@ class IAllerDataSchema(interface.Interface):
 class IFractionnedAllerDataSchema(IAllerDataSchema):
 
     nbrech = schema.Int(title=u"How many echeances",
-                        min_length=0,
-                        max_length=4)
+                        min=0, max=4)
 
     dateech1 = schema.Date(title=u"Date of the first echeance")
 
@@ -75,6 +76,8 @@ class IFractionnedAllerDataSchema(IAllerDataSchema):
 
 
 class AllerForm(BrowserView):
+    """Aller for implement the form to let the user go in paiement aller
+    process"""
     interface.implements(IAllerDataSchema)
     aller_form_template = ViewPageTemplateFile('aller_form.pt')
 
@@ -83,6 +86,7 @@ class AllerForm(BrowserView):
         self.context = context
         self.request = request
         self.portal_state = None
+        self.portal_membership = None
         self.settings = None
         self._MAC = sceau.MAC()
         self.url_retour = None
@@ -91,6 +95,8 @@ class AllerForm(BrowserView):
         self.lgue = None
         self.contact_source = None
         self.contact = None
+        self._montant = None
+        self._reference = None
 
     def __call__(self):
         self.update()
@@ -105,7 +111,11 @@ class AllerForm(BrowserView):
             self.portal_state = component.getMultiAdapter((self.context,
                                                           self.request),
                                                      name="plone_portal_state")
-        self._MAC.udpate()
+        if self.portal_membership is None:
+            self.portal_membership = getToolByName(self.context,
+                                                 'portal_membership')
+        self._MAC.set_key(self.settings.security_key)
+#        self._MAC.update()
         context_url = self.context.absolute_url()
         if self.url_retour is None:
             self.url_retour = context_url + '/@@cmcic_retour'
@@ -125,18 +135,24 @@ class AllerForm(BrowserView):
                 self.contact = self.portal_state.member()
             elif self.contact_source == "creator":
                 creator = self.Creators()[0]
-                self.contact = self.membership_tool.getMemberById(creator)
+                self.contact = self.portal_membership.getMemberById(creator)
 
     def action_url(self):
-        return self.settings.url_paiement
+        bank_url = settings.URLS.get(self.settings.bank, '')
+        if bank_url:
+            return bank_url["paiement"]
 
     def date(self):
         return self.context.Modified.strftime('%d/%m/%Y:%H:%M:%S')
 
     def montant(self):
+        if self._montant is not None:
+            return self._montant
         raise NotImplementedError("must be implemented in subclass")
 
     def reference(self):
+        if self._reference is not None:
+            return self._reference
         raise NotImplementedError("must be implemented in subclass")
 
     def text_libre(self):
@@ -155,4 +171,8 @@ class AllerForm(BrowserView):
         return self.aller_form_template()
 
     def TPE(self):
+        """docstring ?"""
         return self.settings.TPE
+
+    def MAC(self):
+        return self._MAC

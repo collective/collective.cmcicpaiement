@@ -1,6 +1,6 @@
 ￼<form method="post" name="CMCICFormulaire" target="_top" action="view/action_url">
-<input type="hidden" name="version" value="3.0" tal:attributes="value view/version">
 <input type="hidden" name="TPE" value="1234567" tal:attributes="value view/TPE">
+<input type="hidden" name="version" value="3.0" tal:attributes="value view/version">
 <input type="hidden" name="date" value="05/12/2006:11:55:23" tal:attributes="value view/date">
 <input type="hidden" name="montant" value="62.73EUR" tal:attributes="value view/montant">
 <input type="hidden" name="reference" value="ABERTPY00145" tal:attributes="value view/reference">
