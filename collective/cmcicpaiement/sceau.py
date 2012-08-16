@@ -14,6 +14,8 @@ dans un ordre précis des informations du formulaire :
 
 #python
 import hmac  # the python implementation of RFC 2104
+import sha
+from encodings import hex_codec
 
 #zope
 from zope import component
@@ -24,7 +26,7 @@ from plone.registry.interfaces import IRegistry
 #others
 from collective.cmcicpaiement import settings
 
-KEYS_ORDER = ('TPE','date','montant','reference','texte-libre',
+KEYS_ORDER = ('TPE','date','montant','reference','texte_libre',
 'version','lgue','societe','mail','nbrech','dateech1',
 'montantech1','dateech2','montantech2','dateech3','montantech3',
 'dateech4','montantech4','options')
@@ -32,46 +34,79 @@ KEYS_ORDER = ('TPE','date','montant','reference','texte-libre',
 SEPARATOR = '*'
 
 
-class MAC(object):
-    """Wrapper around hmac library to load key from plone registry"""
-    def __init__(self, key=None, msg=None, digestmod=None):
-        self._wrapped = None
-        self.digestmod = digestmod  # not used atm
-        self._key = None
-        if msg is not None:
-            self.update(msg)
-        if key is not None:
-            self.set_key(key)
-
-    def update(self, message=None):
-        if self._key is None:
-            registry = component.queryUtility(IRegistry)
-            records = registry.forInterface(settings.Settings)
-            self.set_key(records.security_key)
-
-        if message and not self._wrapped:
-            raise ValueError('can set a message in HMAC without a key')
-        elif message:
-            self._wrapped.update(message)
-
-    def set_key(self, value):
-        self._key = value
-        self._wrapped = hmac.new(str(self._key))
-
-    def digest(self):
-        return self._wrapped.digest()
-
-    def hexdigest(self):
-        return self._wrapped.hexdigest()
-
-    def __repr__(self):
-        return self._wrapped.hexdigest()
-
-
 def format_data(data):
     """Return a string from a dict supposed to have all waited keys"""
     concatened = ""
-    for KEY in KEYS_ORDER:
-        if KEY in data:
-            concatened += data[KEY]
-    return concatened
+
+    if type(data) == dict:
+        for KEY in KEYS_ORDER:
+            if KEY in data:
+                concatened += data[KEY]
+            concatened += "*"
+    else:
+        for KEY in KEYS_ORDER:
+            if hasattr(data, KEY):
+                value = getattr(data, KEY)
+                if hasattr(value, "__call__"):
+                    value = value()
+                concatened += value
+            concatened += "*"
+    return concatened[:-1]  # remove last *
+
+
+class CMCIC_Tpe :
+
+    def __init__(self) :
+
+        self.sVersion = "3.0"
+        self._sCle = ""
+        self.sNumero = "0394542"
+        self.sUrlPaiement = ""
+
+        self.sCodeSociete = "ABE"
+        self.sLangue = "FR"
+
+        self.sUrlOk = ""
+        self.sUrlKo = ""
+
+
+class CMCIC_Hmac :
+
+    def __init__(self, oTpe):
+
+        self._sUsableKey = self._getUsableKey(oTpe)
+
+    def computeHMACSHA1(self, sData):
+
+        return self.hmac_sha1(self._sUsableKey, sData)
+
+    def hmac_sha1(self, sKey, sData) :
+
+        #HMAC = hmac.HMAC(sKey,None,hashlib.sha1)
+        HMAC = hmac.HMAC(sKey,None,sha)
+        HMAC.update(sData)
+
+        return HMAC.hexdigest()
+
+    def bIsValidHmac(self, sChaine, sMAC):
+
+        return self.computeHMACSHA1(sChaine) == sMAC.lower()
+
+    def _getUsableKey(self, oTpe) :
+
+        hexStrKey  = oTpe._sCle[0:38]
+        hexFinal   = oTpe._sCle[38:40] + "00";
+
+        cca0=ord(hexFinal[0:1])
+
+        if cca0>70 and cca0<97 :
+                hexStrKey += chr(cca0-23) + hexFinal[1:2]
+        elif hexFinal[1:2] == "M" :
+                hexStrKey += hexFinal[0:1] + "0" 
+        else :
+                hexStrKey += hexFinal[0:2]
+
+        c =  hex_codec.Codec()
+        hexStrKey = c.decode(hexStrKey)[0]
+
+        return hexStrKey

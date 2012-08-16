@@ -13,6 +13,7 @@ from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import settings
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFCore.utils import getToolByName
+from collective.cmcicpaiement.sceau import format_data
 
 
 class IAllerDataSchema(interface.Interface):
@@ -82,32 +83,29 @@ class AllerForm(BrowserView):
     aller_form_template = ViewPageTemplateFile('aller_form.pt')
 
     def __init__(self, context, request):
-        self.version = "3.0"
         self.context = context
         self.request = request
+        self._oTpe = sceau.CMCIC_Tpe()
         self.portal_state = None
         self.portal_membership = None
-        self.settings = None
-        self._MAC = sceau.MAC()
-        self.url_retour = None
-        self.url_retour_ok = None
-        self.url_retour_err = None
-        self.lgue = "FR"
+        self._settings = None
         self.contact_source = None
         self.contact = None
         self._montant = None
         self._reference = None
-        self.societe = None
+        self.url_retour = None
+        self.url_retour_ok = None
+        self.url_retour_err = None
 
     def __call__(self):
         self.update()
         return self.index()
 
     def update(self):
-        if self.settings is None:
+        if self._settings is None:
             registry = component.queryUtility(IRegistry)
             if registry:
-                self.settings = registry.forInterface(settings.Settings)
+                self._settings = registry.forInterface(settings.Settings)
         if self.portal_state is None:
             self.portal_state = component.getMultiAdapter((self.context,
                                                           self.request),
@@ -115,8 +113,14 @@ class AllerForm(BrowserView):
         if self.portal_membership is None:
             self.portal_membership = getToolByName(self.context,
                                                  'portal_membership')
-        self._MAC.set_key(self.settings.security_key)
-#        self._MAC.update()
+#        self._MAC.set_key(self._settings.security_key)
+
+        #update oTpe
+        self._oTpe._sCle = self._settings.security_key
+        self._oTpe.sCodeSociete = self._settings.societe
+        bank_url = settings.URLS.get(self._settings.bank)
+        self._oTpe.sUrlPaiement = bank_url["paiement"]
+
         context_url = self.context.absolute_url()
         if self.url_retour is None:
             self.url_retour = context_url + '/@@cmcic_retour'
@@ -126,10 +130,7 @@ class AllerForm(BrowserView):
             self.url_retour_err = context_url + '/@@cmcic_retour_err'
 
         if self.contact_source is None:
-            self.contact_source = self.settings.contact_source
-        
-        if self.societe is None:
-            self.societe = self.settings.societe
+            self.contact_source = self._settings.contact_source
 
         if self.contact is None:
             if self.contact_source == "member":
@@ -138,42 +139,70 @@ class AllerForm(BrowserView):
                 creator = self.Creators()[0]
                 self.contact = self.portal_membership.getMemberById(creator)
 
-    def action_url(self):
-        bank_url = settings.URLS.get(self.settings.bank, '')
-        if bank_url:
-            return bank_url["paiement"]
+    @property
+    def version(self):
+        return self._oTpe.sVersion
 
+    @property
+    def societe(self):
+        return self._oTpe.sCodeSociete
+
+    @property
+    def TPE(self):
+        return self._oTpe.sNumero
+
+    @property
+    def lgue(self):
+        return self._oTpe.sLangue
+
+    @property
+    def action_url(self):
+        return self._oTpe.sUrlPaiement
+
+    @property
     def date(self):
         return self.context.modified().strftime('%d/%m/%Y:%H:%M:%S')
 
+    @property
     def montant(self):
         if self._montant is not None:
             return self._montant
         raise NotImplementedError("must be implemented in subclass")
 
+    @property
     def reference(self):
         if self._reference is not None:
             return self._reference
         raise NotImplementedError("must be implemented in subclass")
 
+    @property
     def texte_libre(self):
         return u"texte_libre"
 
+    @property
     def mail(self):
         #Note: we may use the creator of hte context ...
         if self.contact is not None:
             return self.contact.getProperty('email')
         raise ValueError("can t get email contact")
 
+    @property
     def options(self):
         return ""
 
     def aller_form(self):
         return self.aller_form_template()
 
-    def TPE(self):
-        """docstring ?"""
-        return self.settings.TPE
-
+    @property
     def MAC(self):
-        return self._MAC
+
+        oMac = sceau.CMCIC_Hmac(self._oTpe)
+        sChaineMAC = str(format_data(self))
+
+        self.debug_message = str(format_data(self))
+        self.debug_mac = oMac.computeHMACSHA1(sChaineMAC)
+
+        return oMac.computeHMACSHA1(sChaineMAC)
+
+#        self._MAC.update(str(format_data(self)))
+#        return self._MAC.hexdigest()
