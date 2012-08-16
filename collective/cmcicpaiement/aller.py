@@ -199,10 +199,4 @@ class AllerForm(BrowserView):
         oMac = sceau.CMCIC_Hmac(self._oTpe)
         sChaineMAC = str(format_data(self))
 
-        self.debug_message = str(format_data(self))
-        self.debug_mac = oMac.computeHMACSHA1(sChaineMAC)
-
         return oMac.computeHMACSHA1(sChaineMAC)
-
-#        self._MAC.update(str(format_data(self)))
-#        return self._MAC.hexdigest()
