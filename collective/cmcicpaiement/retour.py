@@ -71,8 +71,6 @@ class IRetourDataSchema(interface.Interface):
     cbmasquee = schema.ASCIILine(title=_(u"cbmasquee"))
 
 
-
-
 class Retour(object):
     def __init__(self):
         self._MAC = None

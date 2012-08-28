@@ -14,6 +14,7 @@ from collective.cmcicpaiement import settings
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFCore.utils import getToolByName
 from collective.cmcicpaiement.sceau import format_data
+from plone.uuid.interfaces import IUUID
 
 
 class IAllerDataSchema(interface.Interface):
@@ -121,13 +122,16 @@ class AllerForm(BrowserView):
         bank_url = settings.URLS.get(self._settings.bank)
         self._oTpe.sUrlPaiement = bank_url["paiement"]
 
-        context_url = self.context.absolute_url()
+        site_url = self.portal_state.navigation_root_url()
+        UUID = IUUID(self.context)
+
         if self.url_retour is None:
-            self.url_retour = context_url + '/@@cmcic_retour'
+            self.url_retour = '%s/@@cmcic_retour?uuid=%s' % (site_url, UUID)
         if self.url_retour_ok is None:
-            self.url_retour_ok = context_url + '/@@cmcic_retour_ok'
+            self.url_retour_ok = '%s/@@cmcic_retour_ok?uuid=%s' % (site_url, UUID)
         if self.url_retour_err is None:
-            self.url_retour_err = context_url + '/@@cmcic_retour_err'
+            self.url_retour_err = '%s/@@cmcic_retour_err?uuid=%s' % (site_url,
+                                                                   UUID)
 
         if self.contact_source is None:
             self.contact_source = self._settings.contact_source
