@@ -28,7 +28,7 @@
       for="Products.CMFPlone.interfaces.IPloneSiteRoot"
       name="cmcic_retour"
       class=".retour.RetourView"
-      interface=".layer.ILayer"
+      layer=".layer.ILayer"
       permission="zope2.View"
       />
 
