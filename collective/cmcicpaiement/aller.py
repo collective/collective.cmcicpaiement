@@ -4,17 +4,19 @@ from zope import component
 from zope import schema
 from zope import interface
 from Products.Five.browser import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
+#cmf
+from Products.CMFCore.utils import getToolByName
 
 #plone
 from plone.registry.interfaces import IRegistry
+from plone.uuid.interfaces import IUUID
 
 #others
 from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import settings
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-from Products.CMFCore.utils import getToolByName
 from collective.cmcicpaiement.sceau import format_data
-from plone.uuid.interfaces import IUUID
 
 
 class IAllerDataSchema(interface.Interface):

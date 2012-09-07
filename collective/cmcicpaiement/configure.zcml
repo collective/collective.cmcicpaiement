@@ -1,5 +1,6 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:five="http://namespaces.zope.org/five"
     xmlns:cmf="http://namespaces.zope.org/cmf"
     xmlns:i18n="http://namespaces.zope.org/i18n"
@@ -23,15 +24,12 @@
       name="collective.cmcicpaiement"
       />
 
-  <!-- 
   <browser:page
-      for="*"
-      name="myview"
-      menu="plone_displayviews"
-      title="Galleria"
-      class=".myfile.MyView"
-      layer=".interfaces.ILayer"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      name="cmcic_retour"
+      class=".retour.RetourView"
+      interface=".layer.ILayer"
       permission="zope2.View"
       />
-  -->
+
 </configure>

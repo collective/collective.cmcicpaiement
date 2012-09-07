@@ -31,6 +31,15 @@ collective.cmcicpaiement.aller.AllerForm , implements montant and reference
 method and call aller_form in your template to render the paid button that
 will do the job.
 
+Retour
+------
+
+This addon manage the "Retour" phase and response to the bank.
+It use the zope event infrastructure to notify the system of paiements.
+
+The retour URL must be configured by the bank and must be:
+
+  yoursite.com/@@cmcic_retour
 
 
 Credits

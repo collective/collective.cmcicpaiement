@@ -1,9 +1,21 @@
+import logging
+
+#zope
+from zope import component
 from zope import event
 from zope import schema
 from zope import interface
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 from Products.Five.browser import BrowserView
 
+#cmf
+from Products.CMFCore.utils import getToolByName
+
+#plone
+from plone.registry.interfaces import IRegistry
+
+#others
+from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import i18n
 
 #module var
@@ -17,27 +29,98 @@ cvx_vocabulary = SimpleVocabulary([
 
 class RetourView(BrowserView):
     """Retour browser view is called by the CM CIC"""
-    sceau_validated_accuse_reception = "version=2\ncdr=0\n"
-    sceau_notvalidated_accuse_reception = "version=2\ncdr=1\n"
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        self._oTpe = sceau.CMCIC_Tpe()
+        self.portal_state = None
+        self.portal_membership = None
+        self._settings = None
 
     def __call__(self):
         self.update()
-        if self._is_sceau_valide:
-            return self.sceau_validated_accuse_reception
         self.notify()
-        return self.sceau_notvalidated_accuse_reception
+        return self.message
 
     def update(self):
-        #build retour object, validate it and notify the system
-        #the paiement is accepted or not
-        self.event = RetourEvent(self.request)
-        self._validate_sceau()
+        """build retour object, validate it and notify the system"""
+        if self._settings is None:
+            registry = component.queryUtility(IRegistry)
+            if registry:
+                self._settings = registry.forInterface(settings.Settings)
+        if self.portal_state is None:
+            self.portal_state = component.getMultiAdapter((self.context,
+                                                          self.request),
+                                                     name="plone_portal_state")
+        if self.portal_membership is None:
+            self.portal_membership = getToolByName(self.context,
+                                                 'portal_membership')
 
-    def _validate_sceau(self):
-        self._is_sceau_valide = True
+        #update oTpe
+        self._oTpe._sCle = self._settings.security_key
+        self._oTpe.sCodeSociete = self._settings.societe
+        bank_url = settings.URLS.get(self._settings.bank)
+        self._oTpe.sUrlPaiement = bank_url["paiement"]
+
+        #code copy paste adapted from provided example from the CM CIC
+        params = self.request.form
+
+        oTpe = self._oTpe
+        oHmac = sceau.CMCIC_Hmac(oTpe)
+
+        Certification = {'MAC' : "", 'date' : "", 'montant' : "", 'reference' : "", 'texte-libre' : "", 'code-retour' : "", 'cvx' : "", 'vld' : "", 'brand' : "", 'status3ds' : "", 'numauto' : "", 'motifrefus' : "", 'originecb' : "", 'bincb' : "", 'hpancb' : "", 'ipclient' : "", 'originetr' : "", 'veres' : "", 'pares' : "", 'montantech' : ""}
+
+        for key in Certification.keys():
+            if params.has_key(key):
+                Certification[key] = params[key].value
+
+        sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" + Certification['montant'] + "*" + Certification['reference'] + "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" + Certification['code-retour'] + "*" + Certification['cvx'] + "*" + Certification['vld'] + "*" + Certification['brand'] + "*" + Certification['status3ds'] + "*" + Certification['numauto'] + "*" + Certification['motifrefus'] + "*" + Certification['originecb'] + "*" + Certification['bincb'] + "*" + Certification['hpancb'] + "*" + Certification['ipclient'] + "*" + Certification['originetr'] + "*" + Certification['veres'] + "*" + Certification['pares'] + "*";
+        self._sceau_validated = oHmac.bIsValidHmac(sChaineMAC, Certification['MAC'])
+
+        #for documentation purpose, real code is managed by the notification
+        if self._sceau_validated:
+            if Certification['code-retour'] == "Annulation":
+                # Payment has been refused
+                # The payment may be accepted later
+                # put your code here (email sending / Database update)
+                pass
+
+            elif Certification['code-retour'] == "payetest":
+                # Payment has been accepeted on the test server
+                # put your code here (email sending / Database update)
+                pass 
+
+            elif Certification['code-retour'] == "paiement":
+                # Payment has been accepeted on the productive server
+                # put your code here (email sending / Database update)
+                pass 
+
+            #*** ONLY FOR MULTIPART PAYMENT ***#
+            elif Certification['code-retour'] == "paiement_pf2" or Certification['code-retour'] == "paiement_pf3" or Certification['code-retour'] == "paiement_pf4":
+                # Payment has been accepted on the productive server for the part #N
+                # return code is like paiement_pf[#N]
+                # put your code here (email sending / Database update)
+                # You have the amount of the payment part in Certification['montantech']
+                pass
+
+            elif Certification['code-retour'] == "Annulation_pf2" or Certification['code-retour'] == "Annulation_pf3" or Certification['code-retour'] == "Annulation_pf4":
+                # Payment has been refused on the productive server for the part #N
+                # return code is like Annulation_pf[#N]
+                # put your code here (email sending / Database update)
+                # You have the amount of the payment part in Certification['montantech']
+                pass
+
+                sResult = "0"
+        else : 
+                sResult = "1\n" + sChaineMAC
+
+        self.event = RetourEvent(params)
+        self.message = "version=2\ncdr=" + sResult
 
     def notify(self):
         event.notify(self.event)
+
 
 RETOUR_ATTRS = {
   "MAC": None,
@@ -68,13 +151,18 @@ RETOUR_ATTRS = {
   "cbmasquee": None
 }
 
+
+class IRetourEvent(interface.Interface):
+    """Retour event interface"""
+
+
 class RetourEvent(object):
     """Retour event is throwed when the bank contact the server
     You have to subscribe to this event to manage bank return
     
     Notification happens on every try.
     """
-    implements(IRetourDataSchema)
+    interface.implements(IRetourEvent)
 
     def __init__(self, retour):
         self.retour = retour
