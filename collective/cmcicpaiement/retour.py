@@ -17,6 +17,7 @@ from plone.registry.interfaces import IRegistry
 #others
 from collective.cmcicpaiement import sceau
 from collective.cmcicpaiement import i18n
+from collective.cmcicpaiement import settings
 
 #module var
 _ = i18n.message_factory
@@ -25,6 +26,8 @@ cvx_vocabulary = SimpleVocabulary([
     SimpleTerm('oui', 'oui', _(u'Le cryptogramme visuel a ete saisie')),
     SimpleTerm('non', 'non', _(u'Pas de cryptogramme'))
 ])
+
+logger = logging.getLogger('nge.boutique.retour')
 
 
 class RetourView(BrowserView):
@@ -37,10 +40,12 @@ class RetourView(BrowserView):
         self.portal_state = None
         self.portal_membership = None
         self._settings = None
+        self._sceau_validated = False
 
     def __call__(self):
         self.update()
-        self.notify()
+        if self._sceau_validated:
+            self.notify()
         return self.message
 
     def update(self):
@@ -73,49 +78,19 @@ class RetourView(BrowserView):
 
         for key in Certification.keys():
             if params.has_key(key):
-                Certification[key] = params[key].value
+                Certification[key] = params[key]#.value
 
         sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" + Certification['montant'] + "*" + Certification['reference'] + "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" + Certification['code-retour'] + "*" + Certification['cvx'] + "*" + Certification['vld'] + "*" + Certification['brand'] + "*" + Certification['status3ds'] + "*" + Certification['numauto'] + "*" + Certification['motifrefus'] + "*" + Certification['originecb'] + "*" + Certification['bincb'] + "*" + Certification['hpancb'] + "*" + Certification['ipclient'] + "*" + Certification['originetr'] + "*" + Certification['veres'] + "*" + Certification['pares'] + "*";
+
         self._sceau_validated = oHmac.bIsValidHmac(sChaineMAC, Certification['MAC'])
 
         #for documentation purpose, real code is managed by the notification
         if self._sceau_validated:
-            if Certification['code-retour'] == "Annulation":
-                # Payment has been refused
-                # The payment may be accepted later
-                # put your code here (email sending / Database update)
-                pass
-
-            elif Certification['code-retour'] == "payetest":
-                # Payment has been accepeted on the test server
-                # put your code here (email sending / Database update)
-                pass 
-
-            elif Certification['code-retour'] == "paiement":
-                # Payment has been accepeted on the productive server
-                # put your code here (email sending / Database update)
-                pass 
-
-            #*** ONLY FOR MULTIPART PAYMENT ***#
-            elif Certification['code-retour'] == "paiement_pf2" or Certification['code-retour'] == "paiement_pf3" or Certification['code-retour'] == "paiement_pf4":
-                # Payment has been accepted on the productive server for the part #N
-                # return code is like paiement_pf[#N]
-                # put your code here (email sending / Database update)
-                # You have the amount of the payment part in Certification['montantech']
-                pass
-
-            elif Certification['code-retour'] == "Annulation_pf2" or Certification['code-retour'] == "Annulation_pf3" or Certification['code-retour'] == "Annulation_pf4":
-                # Payment has been refused on the productive server for the part #N
-                # return code is like Annulation_pf[#N]
-                # put your code here (email sending / Database update)
-                # You have the amount of the payment part in Certification['montantech']
-                pass
-
-                sResult = "0"
+            sResult = "0"
         else : 
-                sResult = "1\n" + sChaineMAC
+            sResult = "1\n" + sChaineMAC
 
-        self.event = RetourEvent(params)
+        self.event = RetourEvent(self.context, self.request, params)
         self.message = "version=2\ncdr=" + sResult
 
     def notify(self):
@@ -164,15 +139,17 @@ class RetourEvent(object):
     """
     interface.implements(IRetourEvent)
 
-    def __init__(self, retour):
+    def __init__(self, context, request, retour):
         self.retour = retour
+        self.context = context
+        self.request = request
 
     def __getattr__(self, name):
-        if name in RETOUR_ATTRS:
+        if self.retour and name in RETOUR_ATTRS:
             config = RETOUR_ATTRS[name]
-            if config and "name" in config:
+            if config and "name" in config and config['name'] in self.retour:
                 value = self.retour[config['name']]
-            else:
+            elif name in self.retour:
                 value = self.retour[name]
             if config and "strptime" in config:
                 value = datetime.strptime(value, config["strptime"])
@@ -184,5 +161,3 @@ class RetourEvent(object):
                     logger.error('wrong value for %s: %s' % (name, value))
             else:
                 return value
-        return super(RetourEvent, self).__getattr__(name)
-

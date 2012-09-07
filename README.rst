@@ -41,6 +41,46 @@ The retour URL must be configured by the bank and must be:
 
   yoursite.com/@@cmcic_retour
 
+event example::
+
+    <subscriber
+      for="collective.cmcicpaiement.retour.IRetourEvent"
+      handler=".retour.retour_handler" />
+    
+    
+    def retour_handler(event):
+    
+        if event.code_retour == "Annulation":
+            # Payment has been refused
+            # The payment may be accepted later
+            # put your code here (email sending / Database update)
+            logger.info('paiement refused')
+    
+        elif event.code_retour == "payetest":
+            # Payment has been accepeted on the test server
+            # put your code here (email sending / Database update)
+            logger.info('paiement accepted from test server')
+    
+        elif event.code_retour == "paiement":
+            # Payment has been accepeted on the productive server
+            # put your code here (email sending / Database update)
+            logger.info('paiement accepted from production server')
+    
+        #*** ONLY FOR MULTIPART PAYMENT ***#
+        elif event.code_retour == "paiement_pf2" or event.code_retour == "paiement_pf3" or event.code_retour == "paiement_pf4":
+            # Payment has been accepted on the productive server for the part #N
+            # return code is like paiement_pf[#N]
+            # put your code here (email sending / Database update)
+            # You have the amount of the payment part in event.montantech
+            logger.info('paiement accepted from production server for a part')
+    
+        elif event.code_retour == "Annulation_pf2" or event.code_retour == "Annulation_pf3" or event.code_retour == "Annulation_pf4":
+            # Payment has been refused on the productive server for the part #N
+            # return code is like Annulation_pf[#N]
+            # put your code here (email sending / Database update)
+            # You have the amount of the payment part in event.montantech
+            logger.info('paiement refused from production server for a part')
+
 
 Credits
 =======
