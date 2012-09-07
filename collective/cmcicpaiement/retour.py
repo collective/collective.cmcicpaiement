@@ -129,7 +129,7 @@ RETOUR_ATTRS = {
   "montant": None,
   "texte_libre": {"name": "texte-libre"},
   "reference": None,
-  "code-retour": {"name": "code-retour",
+  "code_retour": {"name": "code-retour",
                   "constraints": ('payetest', 'paiement', 'Annulation')},
   "cvx": None,
   "vld": None,
