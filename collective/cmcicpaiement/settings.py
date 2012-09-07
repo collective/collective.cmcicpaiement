@@ -86,3 +86,4 @@ class Settings(interface.Interface):
                                       vocabulary=contact_source_vocab,
                                       default='member')
 
+    sudoer = schema.ASCIILine(title=_(u"UserId to manage notification"))

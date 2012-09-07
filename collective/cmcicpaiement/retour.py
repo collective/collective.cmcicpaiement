@@ -6,6 +6,7 @@ from zope import event
 from zope import schema
 from zope import interface
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
+from AccessControl.SecurityManagement import newSecurityManager
 from Products.Five.browser import BrowserView
 
 #cmf
@@ -45,6 +46,7 @@ class RetourView(BrowserView):
     def __call__(self):
         self.update()
         if self._sceau_validated:
+            self.sudo()
             self.notify()
         return self.message
 
@@ -96,6 +98,12 @@ class RetourView(BrowserView):
     def notify(self):
         event.notify(self.event)
 
+    def sudo(self):
+        """Give admin power to the current call"""
+        #TODO: verify the call is emited from the bank server
+        acl_users = getToolByName(self.context, 'acl_users')
+        admin=acl_users.getUserById(self._settings.sudoer)
+        newSecurityManager(self.request, admin)
 
 RETOUR_ATTRS = {
   "MAC": None,
