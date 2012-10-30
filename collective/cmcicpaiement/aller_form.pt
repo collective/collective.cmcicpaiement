@@ -1,4 +1,4 @@
-￼<form method="post" name="CMCICFormulaire" target="_top" tal:attributes="action view/action_url">
+<form method="post" name="CMCICFormulaire" target="_top" tal:attributes="action view/action_url">
 <input type="hidden" name="TPE" value="1234567" tal:attributes="value view/TPE">
 <input type="hidden" name="version" value="3.0" tal:attributes="value view/version">
 <input type="hidden" name="date" value="05/12/2006:11:55:23" tal:attributes="value view/date">
