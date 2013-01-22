@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import os
 
 version = '1.0'
 
@@ -7,9 +6,7 @@ setup(name='collective.cmcicpaiement',
       version=version,
       description="CM CIC Paiement for Plone",
       long_description=open("README.rst").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
-      # Get more strings from
-      # http://pypi.python.org/pypi?:action=list_classifiers
+                       open("CHANGES.rst").read(),
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Plone",
@@ -17,7 +14,7 @@ setup(name='collective.cmcicpaiement',
         "Framework :: Plone :: 4.1",
         "Framework :: Plone :: 4.2",
         ],
-      keywords='',
+      keywords='Plone cmcicpaiement ecommerce',
       author='',
       author_email='',
       url='http://svn.plone.org/svn/collective/',
@@ -30,9 +27,7 @@ setup(name='collective.cmcicpaiement',
           'setuptools',
           # -*- Extra requirements: -*-
       ],
-      extras_require = dict(
-          tests=['plone.app.testing'],
-      ),
+      extras_require=dict(tests=['plone.app.testing']),
       entry_points="""
       # -*- Entry points: -*-
       [z3c.autoinclude.plugin]

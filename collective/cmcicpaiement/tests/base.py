@@ -1,7 +1,6 @@
 import transaction
 import unittest2 as unittest
 from zope import interface
-from plone.app import testing
 from collective.cmcicpaiement import testing
 from collective.cmcicpaiement.tests import utils
 
@@ -16,8 +15,7 @@ class UnitTestCase(unittest.TestCase):
         super(UnitTestCase, self).setUp()
         self.context = utils.FakeContext()
         self.request = Request()
-        interface.alsoProvides(self.request,
-                               (IAttributeAnnotatable,ILayer))
+        interface.alsoProvides(self.request, (IAttributeAnnotatable, ILayer))
 
 
 class IntegrationTestCase(unittest.TestCase):

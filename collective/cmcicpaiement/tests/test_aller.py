@@ -25,6 +25,7 @@ class UnitTestAllerForm(base.UnitTestCase):
         url = self.form.action_url()
         self.assertEqual(url,
                          "https://paiement.creditmutuel.fr/test/paiement.cgi")
+
     def test_urls(self):
         self.assertEqual(self.form.url_retour,
                          'http://nohost.com/myid/@@cmcic_retour')

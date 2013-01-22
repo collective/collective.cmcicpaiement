@@ -17,19 +17,12 @@ import hmac  # the python implementation of RFC 2104
 import sha
 from encodings import hex_codec
 
-#zope
-from zope import component
-
-#plone
-from plone.registry.interfaces import IRegistry
-
-#others
-from collective.cmcicpaiement import settings
-
-KEYS_ORDER = ('TPE','date','montant','reference','texte_libre',
-'version','lgue','societe','mail','nbrech','dateech1',
-'montantech1','dateech2','montantech2','dateech3','montantech3',
-'dateech4','montantech4','options')
+KEYS_ORDER = (
+    'TPE', 'date', 'montant', 'reference', 'texte_libre',
+    'version', 'lgue', 'societe', 'mail', 'nbrech', 'dateech1',
+    'montantech1', 'dateech2', 'montantech2', 'dateech3', 'montantech3',
+    'dateech4', 'montantech4', 'options'
+)
 
 SEPARATOR = '*'
 
@@ -54,9 +47,9 @@ def format_data(data):
     return concatened[:-1]  # remove last *
 
 
-class CMCIC_Tpe :
+class CMCIC_Tpe:
 
-    def __init__(self) :
+    def __init__(self):
 
         self.sVersion = "3.0"
         self._sCle = ""
@@ -70,7 +63,7 @@ class CMCIC_Tpe :
         self.sUrlKo = ""
 
 
-class CMCIC_Hmac :
+class CMCIC_Hmac:
 
     def __init__(self, oTpe):
 
@@ -80,10 +73,10 @@ class CMCIC_Hmac :
 
         return self.hmac_sha1(self._sUsableKey, sData)
 
-    def hmac_sha1(self, sKey, sData) :
+    def hmac_sha1(self, sKey, sData):
 
         #HMAC = hmac.HMAC(sKey,None,hashlib.sha1)
-        HMAC = hmac.HMAC(sKey,None,sha)
+        HMAC = hmac.HMAC(sKey, None, sha)
         HMAC.update(sData)
 
         return HMAC.hexdigest()
@@ -92,21 +85,21 @@ class CMCIC_Hmac :
 
         return self.computeHMACSHA1(sChaine) == sMAC.lower()
 
-    def _getUsableKey(self, oTpe) :
+    def _getUsableKey(self, oTpe):
 
-        hexStrKey  = oTpe._sCle[0:38]
-        hexFinal   = oTpe._sCle[38:40] + "00";
+        hexStrKey = oTpe._sCle[0:38]
+        hexFinal = oTpe._sCle[38:40] + "00"
 
-        cca0=ord(hexFinal[0:1])
+        cca0 = ord(hexFinal[0:1])
 
-        if cca0>70 and cca0<97 :
-                hexStrKey += chr(cca0-23) + hexFinal[1:2]
-        elif hexFinal[1:2] == "M" :
-                hexStrKey += hexFinal[0:1] + "0" 
-        else :
+        if cca0 > 70 and cca0 < 97:
+                hexStrKey += chr(cca0 - 23) + hexFinal[1:2]
+        elif hexFinal[1:2] == "M":
+                hexStrKey += hexFinal[0:1] + "0"
+        else:
                 hexStrKey += hexFinal[0:2]
 
-        c =  hex_codec.Codec()
+        c = hex_codec.Codec()
         hexStrKey = c.decode(hexStrKey)[0]
 
         return hexStrKey

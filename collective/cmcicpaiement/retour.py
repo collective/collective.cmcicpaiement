@@ -1,9 +1,9 @@
 import logging
+from datetime import datetime
 
 #zope
 from zope import component
 from zope import event
-from zope import schema
 from zope import interface
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 from AccessControl.SecurityManagement import newSecurityManager
@@ -76,20 +76,23 @@ class RetourView(BrowserView):
         oTpe = self._oTpe
         oHmac = sceau.CMCIC_Hmac(oTpe)
 
-        Certification = {'MAC' : "", 'date' : "", 'montant' : "", 'reference' : "", 'texte-libre' : "", 'code-retour' : "", 'cvx' : "", 'vld' : "", 'brand' : "", 'status3ds' : "", 'numauto' : "", 'motifrefus' : "", 'originecb' : "", 'bincb' : "", 'hpancb' : "", 'ipclient' : "", 'originetr' : "", 'veres' : "", 'pares' : "", 'montantech' : ""}
+        Certification = {'MAC': "", 'date': "", 'montant': "", 'reference': "", 'texte-libre': "", 'code-retour': "", 'cvx': "", 'vld': "", 'brand': "", 'status3ds': "", 'numauto': "", 'motifrefus': "", 'originecb': "", 'bincb': "", 'hpancb': "", 'ipclient': "", 'originetr': "", 'veres': "", 'pares': "", 'montantech': ""}
 
         for key in Certification.keys():
-            if params.has_key(key):
-                Certification[key] = params[key]#.value
+            if key in params:  # .has_key(key):
+                Certification[key] = params[key]  # value
 
-        sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" + Certification['montant'] + "*" + Certification['reference'] + "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" + Certification['code-retour'] + "*" + Certification['cvx'] + "*" + Certification['vld'] + "*" + Certification['brand'] + "*" + Certification['status3ds'] + "*" + Certification['numauto'] + "*" + Certification['motifrefus'] + "*" + Certification['originecb'] + "*" + Certification['bincb'] + "*" + Certification['hpancb'] + "*" + Certification['ipclient'] + "*" + Certification['originetr'] + "*" + Certification['veres'] + "*" + Certification['pares'] + "*";
+        sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" + Certification['montant'] + "*" + Certification['reference'] + "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" + Certification['code-retour'] + "*" + Certification['cvx'] + "*" + Certification['vld'] + "*" + Certification['brand'] + "*" + Certification['status3ds'] + "*" + Certification['numauto'] + "*" + Certification['motifrefus'] + "*" + Certification['originecb'] + "*" + Certification['bincb'] + "*" + Certification['hpancb'] + "*" + Certification['ipclient'] + "*" + Certification['originetr'] + "*" + Certification['veres'] + "*" + Certification['pares'] + "*"
 
-        self._sceau_validated = oHmac.bIsValidHmac(sChaineMAC, Certification['MAC'])
+        self._sceau_validated = oHmac.bIsValidHmac(
+            sChaineMAC,
+            Certification['MAC']
+        )
 
         #for documentation purpose, real code is managed by the notification
         if self._sceau_validated:
             sResult = "0"
-        else : 
+        else:
             sResult = "1\n" + sChaineMAC
 
         self.event = RetourEvent(self.context, self.request, params)
@@ -102,36 +105,39 @@ class RetourView(BrowserView):
         """Give admin power to the current call"""
         #TODO: verify the call is emited from the bank server
         acl_users = getToolByName(self.context, 'acl_users')
-        admin=acl_users.getUserById(self._settings.sudoer)
+        admin = acl_users.getUserById(self._settings.sudoer)
         newSecurityManager(self.request, admin)
 
 RETOUR_ATTRS = {
-  "MAC": None,
-  "TPE": None,
-  "date": {"strptime": "%d/%m/%Y_a_%H:%M:%S"},
-  "montant": None,
-  "texte_libre": {"name": "texte-libre"},
-  "reference": None,
-  "code_retour": {"name": "code-retour",
-                  "constraints": ('payetest', 'paiement', 'Annulation')},
-  "cvx": None,
-  "vld": None,
-  "brand": {"constraints": ('AM', 'CB', 'MC', 'VI', 'na')},
-  "status3ds": {"constraints": ('-1', '1', '2', '3', '4')},
-  "numauto": None,
-  "motifrefus": {"constraints": ('Appel Phonie', 'Refus', 'Interdit', 'Filtrage')},
-  "originecb": None, #TODO code iso 3166-1
-  "bincb": None,
-  "hpancb": None,
-  "ipclient": None,
-  "originetr": None, #TODO code iso 3166-1
-  "veres": None,
-  "pares": None,
-  "montanttech": None,
-  "filtragecause": {"constraints": ('1', '2', '3', '4', '5', '6', '7', '8',
-                            '9', '10', '11', '12', '13', '14', '15', '16')},
-  "filtragevaleur": None,
-  "cbmasquee": None
+    "MAC": None,
+    "TPE": None,
+    "date": {"strptime": "%d/%m/%Y_a_%H:%M:%S"},
+    "montant": None,
+    "texte_libre": {"name": "texte-libre"},
+    "reference": None,
+    "code_retour": {"name": "code-retour",
+                    "constraints": ('payetest', 'paiement', 'Annulation')},
+    "cvx": None,
+    "vld": None,
+    "brand": {"constraints": ('AM', 'CB', 'MC', 'VI', 'na')},
+    "status3ds": {"constraints": ('-1', '1', '2', '3', '4')},
+    "numauto": None,
+    "motifrefus": {"constraints": ('Appel Phonie', 'Refus', 'Interdit',
+                                   'Filtrage')},
+    "originecb": None,  # TODO code iso 3166-1
+    "bincb": None,
+    "hpancb": None,
+    "ipclient": None,
+    "originetr": None,  # TODO code iso 3166-1
+    "veres": None,
+    "pares": None,
+    "montanttech": None,
+    "filtragecause": {
+        "constraints": ('1', '2', '3', '4', '5', '6', '7', '8',
+        '9', '10', '11', '12', '13', '14', '15', '16')
+    },
+    "filtragevaleur": None,
+    "cbmasquee": None
 }
 
 
@@ -142,7 +148,7 @@ class IRetourEvent(interface.Interface):
 class RetourEvent(object):
     """Retour event is throwed when the bank contact the server
     You have to subscribe to this event to manage bank return
-    
+
     Notification happens on every try.
     """
     interface.implements(IRetourEvent)

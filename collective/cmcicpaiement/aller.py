@@ -21,21 +21,25 @@ from collective.cmcicpaiement.sceau import format_data
 
 class IAllerDataSchema(interface.Interface):
     """Interface "Aller" define all the needed data to create the form"""
-    
-    version = schema.ASCIILine(title=u"version",
-                               default="3.0")
 
-    TPE = schema.ASCIILine(title=u"TPE",
-                           description=u"Numero de TPE Virtuel du commercant. Length : 7 caracters")
+    version = schema.ASCIILine(title=u"version", default="3.0")
 
-    montant = schema.ASCIILine(title=u"Montant",
-                               description=u"Montant TTC de la commande formatee")
+    TPE = schema.ASCIILine(
+        title=u"TPE",
+        description=u"Numero de TPE Virtuel du commercant. Length : 7 car"
+    )
 
-    reference = schema.ASCIILine(title=u"Reference ID",
-                                 description=u"12 max")
+    montant = schema.ASCIILine(
+        title=u"Montant",
+        description=u"Montant TTC de la commande formatee"
+    )
 
-    texte_libre = schema.Text(title=u"Some text",
-                              description=u"3200 caracters max")
+    reference = schema.ASCIILine(title=u"Reference ID", description=u"12 max")
+
+    texte_libre = schema.Text(
+        title=u"Some text",
+        description=u"3200 caracters max"
+    )
 
     mail = schema.ASCIILine(title=u"EMail address")
 
@@ -45,16 +49,22 @@ class IAllerDataSchema(interface.Interface):
 
     url_retour = schema.URI(title=u"Visitor URL to come back")
 
-    url_retour_ok = schema.URI(title=u"Visitor URL to come back",
-                               description=u"next to an accepted paiement")
+    url_retour_ok = schema.URI(
+        title=u"Visitor URL to come back",
+        description=u"next to an accepted paiement"
+    )
 
-    url_retour_err = schema.URI(title=u"Visitor URL to come back",
-                               description=u"next to a failed paiement")
+    url_retour_err = schema.URI(
+        title=u"Visitor URL to come back",
+        description=u"next to a failed paiement"
+    )
 
     MAC = schema.ASCIILine(title=u"Sceau from the certification of data")
 
-    options = schema.ASCIILine(title=u"URL encoded other options",
-                               description=u"Options must be in aliascb,forcesaisiecb")
+    options = schema.ASCIILine(
+        title=u"URL encoded other options",
+        description=u"Options must be in aliascb,forcesaisiecb"
+    )
 
 
 class IFractionnedAllerDataSchema(IAllerDataSchema):
@@ -110,12 +120,15 @@ class AllerForm(BrowserView):
             if registry:
                 self._settings = registry.forInterface(settings.Settings)
         if self.portal_state is None:
-            self.portal_state = component.getMultiAdapter((self.context,
-                                                          self.request),
-                                                     name="plone_portal_state")
+            self.portal_state = component.getMultiAdapter(
+                (self.context, self.request),
+                name="plone_portal_state"
+            )
         if self.portal_membership is None:
-            self.portal_membership = getToolByName(self.context,
-                                                 'portal_membership')
+            self.portal_membership = getToolByName(
+                self.context,
+                'portal_membership'
+            )
 #        self._MAC.set_key(self._settings.security_key)
 
         #update oTpe
@@ -130,10 +143,11 @@ class AllerForm(BrowserView):
         if self.url_retour is None:
             self.url_retour = '%s/@@cmcic_retour?uuid=%s' % (site_url, UUID)
         if self.url_retour_ok is None:
-            self.url_retour_ok = '%s/@@cmcic_retour_ok?uuid=%s' % (site_url, UUID)
+            self.url_retour_ok = '%s/@@cmcic_retour_ok?uuid=%s' % (site_url,
+                                                                   UUID)
         if self.url_retour_err is None:
             self.url_retour_err = '%s/@@cmcic_retour_err?uuid=%s' % (site_url,
-                                                                   UUID)
+                                                                     UUID)
 
         if self.contact_source is None:
             self.contact_source = self._settings.contact_source
