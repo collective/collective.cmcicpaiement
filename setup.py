@@ -27,7 +27,7 @@ setup(name='collective.cmcicpaiement',
           'setuptools',
           # -*- Extra requirements: -*-
       ],
-      extras_require=dict(tests=['plone.app.testing']),
+      extras_require=dict(test=['plone.app.testing']),
       entry_points="""
       # -*- Entry points: -*-
       [z3c.autoinclude.plugin]
