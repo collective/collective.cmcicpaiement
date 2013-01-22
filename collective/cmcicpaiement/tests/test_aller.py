@@ -13,7 +13,7 @@ class UnitTestAllerForm(base.UnitTestCase):
         self.request.debug = False
 
         self.form = aller.AllerForm(self.context, self.request)
-        self.form.settings = utils.EnvSettings()
+        self.form._settings = utils.EnvSettings()
         self.form.portal_state = utils.FakePortalState()
         self.form.portal_membership = utils.FakePortalMembership()
         self.form.update()
@@ -22,25 +22,25 @@ class UnitTestAllerForm(base.UnitTestCase):
         self.assertEqual(self.form.version, "3.0")
 
     def test_action_url(self):
-        url = self.form.action_url()
+        url = self.form.action_url
         self.assertEqual(url,
                          "https://paiement.creditmutuel.fr/test/paiement.cgi")
 
     def test_urls(self):
         self.assertEqual(self.form.url_retour,
-                         'http://nohost.com/myid/@@cmcic_retour')
+                         'http://nohost.com/@@cmcic_retour?uuid=MYUUID')
         self.assertEqual(self.form.url_retour_err,
-                         'http://nohost.com/myid/@@cmcic_retour_err')
+                         'http://nohost.com/@@cmcic_retour_err?uuid=MYUUID')
         self.assertEqual(self.form.url_retour_ok,
-                         'http://nohost.com/myid/@@cmcic_retour_ok')
+                         'http://nohost.com/@@cmcic_retour_ok?uuid=MYUUID')
 
     def test_MAC(self):
-        mac = self.form.MAC()
+        mac = self.form.MAC
         self.assertTrue(mac is not None)
 
     def test_date(self):
         dt = None
-        d = self.form.date()
+        d = self.form.date
         from datetime import datetime
         try:
             dt = datetime.strptime(d, '%d/%m/%Y:%H:%M:%S')
@@ -49,17 +49,21 @@ class UnitTestAllerForm(base.UnitTestCase):
         self.assertTrue(dt is not None)
 
     def test_montant(self):
-        self.assertRaises(NotImplementedError, self.form.montant)
+        def getMontant():
+            return self.form.montant
+        self.assertRaises(NotImplementedError, getMontant)
 
     def test_reference(self):
-        self.assertRaises(NotImplementedError, self.form.reference)
+        def getReference():
+            return self.form.reference
+        self.assertRaises(NotImplementedError, getReference)
 
     def test_text_libre(self):
         #TODO: whats up their ?
         pass
 
     def test_mail(self):
-        self.assertEqual(self.form.mail(), "fakemember@gmail.com")
+        self.assertEqual(self.form.mail, "fakemember@gmail.com")
 
     def test_option(self):
         #TODO: whats up their ?
@@ -70,8 +74,8 @@ class UnitTestAllerForm(base.UnitTestCase):
         pass
 
     def test_TPE(self):
-        self.assertEqual(self.form.TPE(),
-                         self.form.settings.TPE)
+        self.assertEqual(self.form.TPE,
+                         self.form._oTpe.sNumero)
 
 
 class IntegrationTestAllerForm(base.UnitTestCase):

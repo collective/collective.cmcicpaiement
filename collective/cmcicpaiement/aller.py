@@ -138,7 +138,7 @@ class AllerForm(BrowserView):
         self._oTpe.sUrlPaiement = bank_url["paiement"]
 
         site_url = self.portal_state.navigation_root_url()
-        UUID = IUUID(self.context)
+        UUID = self.getUUID()
 
         if self.url_retour is None:
             self.url_retour = '%s/@@cmcic_retour?uuid=%s' % (site_url, UUID)
@@ -220,3 +220,10 @@ class AllerForm(BrowserView):
         sChaineMAC = str(format_data(self))
 
         return oMac.computeHMACSHA1(sChaineMAC)
+
+    def getUUID(self):
+        try:
+            UUID = IUUID(self.context)
+        except TypeError:
+            UUID = self.context.UUID()
+        return UUID

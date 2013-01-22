@@ -42,7 +42,8 @@ def format_data(data):
                 value = getattr(data, KEY)
                 if hasattr(value, "__call__"):
                     value = value()
-                concatened += value
+                if value:
+                    concatened += value
             concatened += "*"
     return concatened[:-1]  # remove last *
 
