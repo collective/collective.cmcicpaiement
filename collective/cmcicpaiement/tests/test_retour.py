@@ -13,6 +13,8 @@ class UnitTestRetourView(base.UnitTestCase):
         self.request.debug = False
 
         self.view = retour.RetourView(self.context, self.request)
+        self.form = {}
+        self.request.form = self.form
         self.view._settings = utils.EnvSettings()
         self.view.portal_state = utils.FakePortalState()
         self.view.portal_membership = utils.FakePortalMembership()

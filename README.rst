@@ -15,8 +15,8 @@ This addon can be installed has any other addons. please follow official
 documentation_
 
 .. _documentation: http://plone.org/documentation/kb/installing-add-ons-quick-how-to
-.. image:: https://secure.travis-ci.org/toutpt/collective.categories.png
-    :target: http://travis-ci.org/toutpt/collective.categories
+.. image:: https://secure.travis-ci.org/collective/collective.cmcicpaiement.png
+    :target: http://travis-ci.org/collective/collective.cmcicpaiement
 
 You will find settings in the registry ( /portal_registry )
 
