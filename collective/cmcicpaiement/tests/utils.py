@@ -4,7 +4,10 @@ from DateTime.DateTime import DateTime
 
 class EnvSettings(object):
     def __init__(self):
-        self.security_key = os.getenv('CMCIC_SECURITY_KEY', '')
+        self.security_key = os.getenv(
+            'CMCIC_SECURITY_KEY',
+            'BEBD2381223A4BDD2C767B3F87E0B15C434C227B'
+        )
         self.TPE = os.getenv('CMCIC_TPE')
         self.societe = os.getenv('CMCIC_SOCIETE')
         self.bank = os.getenv(

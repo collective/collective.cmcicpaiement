@@ -57,12 +57,14 @@ class RetourView(BrowserView):
             if registry:
                 self._settings = registry.forInterface(settings.Settings)
         if self.portal_state is None:
-            self.portal_state = component.getMultiAdapter((self.context,
-                                                          self.request),
-                                                     name="plone_portal_state")
+            self.portal_state = component.getMultiAdapter(
+                (self.context, self.request),
+                name="plone_portal_state"
+            )
         if self.portal_membership is None:
-            self.portal_membership = getToolByName(self.context,
-                                                 'portal_membership')
+            self.portal_membership = getToolByName(
+                self.context, 'portal_membership'
+            )
 
         #update oTpe
         self._oTpe._sCle = self._settings.security_key
@@ -76,13 +78,29 @@ class RetourView(BrowserView):
         oTpe = self._oTpe
         oHmac = sceau.CMCIC_Hmac(oTpe)
 
-        Certification = {'MAC': "", 'date': "", 'montant': "", 'reference': "", 'texte-libre': "", 'code-retour': "", 'cvx': "", 'vld': "", 'brand': "", 'status3ds': "", 'numauto': "", 'motifrefus': "", 'originecb': "", 'bincb': "", 'hpancb': "", 'ipclient': "", 'originetr': "", 'veres': "", 'pares': "", 'montantech': ""}
+        Certification = {
+            'MAC': "", 'date': "", 'montant': "", 'reference': "",
+            'texte-libre': "", 'code-retour': "", 'cvx': "", 'vld': "",
+            'brand': "", 'status3ds': "", 'numauto': "", 'motifrefus': "",
+            'originecb': "", 'bincb': "", 'hpancb': "", 'ipclient': "",
+            'originetr': "", 'veres': "", 'pares': "", 'montantech': ""
+        }
 
         for key in Certification.keys():
             if key in params:  # .has_key(key):
                 Certification[key] = params[key]  # value
 
-        sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" + Certification['montant'] + "*" + Certification['reference'] + "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" + Certification['code-retour'] + "*" + Certification['cvx'] + "*" + Certification['vld'] + "*" + Certification['brand'] + "*" + Certification['status3ds'] + "*" + Certification['numauto'] + "*" + Certification['motifrefus'] + "*" + Certification['originecb'] + "*" + Certification['bincb'] + "*" + Certification['hpancb'] + "*" + Certification['ipclient'] + "*" + Certification['originetr'] + "*" + Certification['veres'] + "*" + Certification['pares'] + "*"
+        sChaineMAC = oTpe.sNumero + "*" + Certification["date"] + "*" +\
+            Certification['montant'] + "*" + Certification['reference'] +\
+            "*" + Certification['texte-libre'] + "*" + oTpe.sVersion + "*" +\
+            Certification['code-retour'] + "*" + Certification['cvx'] + "*" +\
+            Certification['vld'] + "*" + Certification['brand'] + "*" +\
+            Certification['status3ds'] + "*" + Certification['numauto'] +\
+            "*" + Certification['motifrefus'] + "*" +\
+            Certification['originecb'] + "*" + Certification['bincb'] + "*" +\
+            Certification['hpancb'] + "*" + Certification['ipclient'] + "*" +\
+            Certification['originetr'] + "*" + Certification['veres'] + "*" +\
+            Certification['pares'] + "*"
 
         self._sceau_validated = oHmac.bIsValidHmac(
             sChaineMAC,
