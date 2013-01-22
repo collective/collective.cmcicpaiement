@@ -8,7 +8,17 @@ solution
 It can't be use alone, you must provide custom implementation for
 your contents
 
-Status: under development
+How to install
+==============
+
+This addon can be installed has any other addons. please follow official
+documentation_
+
+.. _documentation: http://plone.org/documentation/kb/installing-add-ons-quick-how-to
+.. image:: https://secure.travis-ci.org/toutpt/collective.categories.png
+    :target: http://travis-ci.org/toutpt/collective.categories
+
+You will find settings in the registry ( /portal_registry )
 
 Components
 ==========
